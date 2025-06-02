@@ -23,6 +23,7 @@ typedef struct vertice {
 
     struct vertice *pai;
     uint dist;
+    uint componente;
     int estado;
 } vertice;
 
@@ -55,9 +56,10 @@ void set_states(vertice *V, uint size, int state);
 void mininumDistances(grafo *g, vertice *v);
 int queue_append (queue_t **queue, void *elem);
 void destroy_queue(queue_t **queue);
-void *queue_remove(queue_t **queue);
+void *queue_pop(queue_t **queue);
+void set_components(grafo *g, vertice *r, uint c);
 
-int queue_append (queue_t **queue, void *elem){
+int queue_append(queue_t **queue, void *elem){
     if (!queue){
         fprintf(stderr,"Erro: fila nao existe\n");
         return -1;
@@ -100,7 +102,7 @@ int queue_append (queue_t **queue, void *elem){
     return 0;
 }
 
-void *queue_remove(queue_t **queue) {
+void *queue_pop(queue_t **queue) {
     void *elem;
 
     if (*queue == NULL)
@@ -113,6 +115,7 @@ void *queue_remove(queue_t **queue) {
     }
     else {
         (*queue)->next->prev = (*queue)->prev;
+        (*queue)->prev->next = (*queue)->next;
         queue_t *aux = *queue;
         *queue = (*queue)->next;
         free(aux);
@@ -141,6 +144,37 @@ void destroy_queue(queue_t **queue) {
     *queue = NULL;
 }
 
+// seta como c o numero do componente de todos os vertices que pertencem ao mesmo componente de r
+void set_components(grafo *g, vertice *r, uint c) {
+    queue_t *queue = NULL;
+    vertice *v;
+    neighbor *w;
+
+    set_states(g->v, g->v_num, 0);
+
+    r->pai = NULL;
+    r->estado = 1;
+    r->componente = c;
+    queue_append(&queue, r);
+
+    //desenfileira vertice
+    while ( (v = queue_pop(&queue)) ) {
+        //itera por vizinhos
+        w = v->n_list;
+        while ( w != NULL) {
+            if (w->vert->estado == 0) {
+                queue_append(&queue, w->vert);
+                w->vert->pai = v;
+                w->vert->estado = 1;
+                w->vert->componente = c;
+            }
+            w = w->next;
+        }
+    }
+
+    destroy_queue(&queue);
+}
+
 void set_states(vertice *V, uint size, int state) {
     if (V == NULL) return;
 
@@ -150,24 +184,19 @@ void set_states(vertice *V, uint size, int state) {
 
 // seta distancias minimas entre r e os vertices no componente de r
 void mininumDistances(grafo *g, vertice *r) {
-    queue_t *queue;
+    queue_t *queue = NULL;
     vertice *v;
     neighbor *w;
-    int start, end; //start and end of queue
 
     set_states(g->v, g->v_num, 0);
-
-    start = end = 0;
 
     r->pai = NULL;
     r->dist = 0;
     r->estado = 1;
     queue_append(&queue, (void *)r);
 
-    while (start <= end) {
-        //desenfileira vertice
-        v = queue_remove(&queue);
-
+    //desenfileira vertice
+    while ( (v = queue_pop(&queue)) ) {
         //itera por vizinhos
         w = v->n_list;
         while ( w != NULL) {
@@ -178,8 +207,8 @@ void mininumDistances(grafo *g, vertice *r) {
                 queue_append(&queue, w->vert);
                 w->vert->estado = 1;
             }
+            w = w->next;
         }
-        v->estado=2;
     }
 
     destroy_queue(&queue);
@@ -187,7 +216,6 @@ void mininumDistances(grafo *g, vertice *r) {
 
 vertice *search_vert(vertice *V, uint size, char *name) {
     printf("search\n");
-    printf("size %d\n", size);
     for (uint i = 0; i < size; i++) {
         printf("cmp(V[%d].name = %s, %s)\n", i, V[i].name, name);
         if (strcmp(V[i].name, name) == 0)
@@ -255,8 +283,8 @@ neighbor *add_neighbor(vertice *v, vertice *neigh_v, int weight) {
         }
 
         neigh->next = new_neigh;
-        (v->n_num)++;
     }
+    (v->n_num)++;
 
     return new_neigh;
 }
@@ -338,6 +366,7 @@ void add_graph_edge(grafo *g, char *name_a, char *name_b, int weight) {
     add_neighbor(vert_a, vert_b, weight);
     add_neighbor(vert_b, vert_a, weight);
 }
+
 //------------------------------------------------------------------------------
 // lê um grafo de f e o devolve
 grafo *le_grafo(FILE *f) {
@@ -416,20 +445,33 @@ unsigned int n_vertices(grafo *g) {
 // devolve o número de arestas em g
 unsigned int n_arestas(grafo *g) {
     uint arestas = 0;
-    for (uint  i = 0; i < g->v_num; i++) {
+
+    for (uint  i = 0; i < g->v_num; i++)
         arestas += g->v[i].n_num;
-    }
+
     return arestas/2;
+}
+
+
+//------------------------------------------------------------------------------
+// devolve o número de componentes em g
+unsigned int n_componentes(grafo *g) {
+    uint c = 0;
+
+    for (uint  i = 0; i < g->v_num; i++)
+        g->v[i].componente = 0;
+
+    for (uint  i = 0; i < g->v_num; i++)
+        if (g->v[i].componente == 0)
+            set_components(g, &g->v[i], ++c);
+
+    return c;
 }
 
 /*
 //------------------------------------------------------------------------------
 // devolve 1 se g é bipartido e 0 caso contrário
 unsigned int bipartido(grafo *g);
-
-//------------------------------------------------------------------------------
-// devolve o número de componentes em g
-unsigned int n_componentes(grafo *g);
 
 //------------------------------------------------------------------------------
 // devolve uma "string" com os diâmetros dos componentes de g separados por brancos
