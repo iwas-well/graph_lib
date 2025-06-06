@@ -1,5 +1,6 @@
 #ifndef GRAFO_H
 #define GRAFO_H
+#include <stdio.h>
 
 //------------------------------------------------------------------------------
 // estrutura de dados para representar um grafo
@@ -21,11 +22,12 @@ typedef struct grafo grafo;
 // uma aresta é representada por uma linha
 // xxx -- yyy ppp
 //
-// onde xxx e yyy são nomes de vértices e ppp (opcional) é um int não negativo indicando o peso da aresta
+// onde xxx e yyy são nomes de vértices e ppp (opcional) é um int não negativo indicando o peso da
+// aresta
 //
 // se um vértice faz parte de uma aresta, não é necessário nomeá-lo individualmente em uma linha
 //
-// a função supõe que a entrada está corretamente construída e não faz nenhuma checagem 
+// a função supõe que a entrada está corretamente construída e não faz nenhuma checagem
 // caso a entrada não esteja corretamente construída, o comportamento da função é indefinido
 //
 // abaixo, a título de exemplo, a representação de um grafo com quatro
@@ -45,51 +47,51 @@ três
 
 */
 
-grafo *le_grafo(FILE *f);
+grafo* le_grafo(FILE* f);
 
 //------------------------------------------------------------------------------
 // desaloca toda a estrutura de dados alocada em g
 //
 // devolve 1 em caso de sucesso e 0 em caso de erro
 
-unsigned int destroi_grafo(grafo *g);
+unsigned int destroi_grafo(grafo* g);
 
 //------------------------------------------------------------------------------
 // devolve o nome de g
 
-char *nome(grafo *g);
+char* nome(grafo* g);
 
 //------------------------------------------------------------------------------
 // devolve 1 se g é bipartido e 0 caso contrário
 
-unsigned int bipartido(grafo *g);
+unsigned int bipartido(grafo* g);
 
 //------------------------------------------------------------------------------
 // devolve o número de vértices em g
 
-unsigned int n_vertices(grafo *g);
+unsigned int n_vertices(grafo* g);
 
 //------------------------------------------------------------------------------
 // devolve o número de arestas em g
 
-unsigned int n_arestas(grafo *g);
+unsigned int n_arestas(grafo* g);
 
 //------------------------------------------------------------------------------
 // devolve o número de componentes em g
 
-unsigned int n_componentes(grafo *g);
+unsigned int n_componentes(grafo* g);
 
 //------------------------------------------------------------------------------
 // devolve uma "string" com os diâmetros dos componentes de g separados por brancos
 // em ordem não decrescente
 
-char *diametros(grafo *g);
+char* diametros(grafo* g);
 
 //------------------------------------------------------------------------------
 // devolve uma "string" com os nomes dos vértices de corte de g em
 // ordem alfabética, separados por brancos
 
-char *vertices_corte(grafo *g);
+char* vertices_corte(grafo* g);
 
 //------------------------------------------------------------------------------
 // devolve uma "string" com as arestas de corte de g em ordem alfabética, separadas por brancos
@@ -98,6 +100,6 @@ char *vertices_corte(grafo *g);
 // por exemplo, se as arestas de corte são {z, a}, {x, b} e {y, c}, a resposta será a string
 // "a z b x c y"
 
-char *arestas_corte(grafo *g);
+char* arestas_corte(grafo* g);
 
 #endif
