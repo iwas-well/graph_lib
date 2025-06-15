@@ -29,7 +29,7 @@ typedef struct vertice {
     uint n_num;
 
     struct vertice* pai;
-    uint dist;
+    // uint dist;
     uint componente;
     uint lowpoint;
     uint nivel;
@@ -96,7 +96,6 @@ int queue_append(queue_t** queue, void* elem)
         return 0;
     }
 
-    queue_t* next_node = (*queue)->next;
     queue_t* prev_node = (*queue)->prev;
 
     // insere elemento no final da fila
@@ -105,13 +104,7 @@ int queue_append(queue_t** queue, void* elem)
     node->next = (*queue);
 
     (*queue)->prev = node;
-
-    if (next_node == (*queue))
-        // caso haja um unico elemento, altera tambem o next
-        (*queue)->next = node;
-    else
-        // caso hajam mais elementos, altera next do ex-ultimo da fila
-        prev_node->next = elem;
+    prev_node->next = node;
 
     return 0;
 }
@@ -126,12 +119,12 @@ void* queue_pop(queue_t** queue)
 
     elem = (*queue)->elem;
     if ((*queue)->next == *queue) {
-        printf("last element\n");
+        // printf("last element\n");
         free(*queue);
         *queue = NULL;
     } else {
-        printf("not last element\n");
-        printf("next %s\n", ((vertice*)(*queue)->prev->elem)->name);
+        // printf("%s is not last element\n", ((vertice*)elem)->name);
+        // printf("next %s\n", ((vertice*)elem)->name);
         (*queue)->next->prev = (*queue)->prev;
         (*queue)->prev->next = (*queue)->next;
         queue_t* aux = *queue;
@@ -184,42 +177,36 @@ uint set_components(grafo* g)
     vertice* r;
     uint c = 0;
 
-    // initialize veritces state
-    set_states(g->v, g->v_num, 0);
-
     // initialize component number of all vertices
     for (uint i = 0; i < g->v_num; i++)
         g->v[i].componente = 0;
 
-    // for each vevrtice, set the component of the connected subgraph it belongs to
+    // for each vertice, set the component of the connected subgraph it belongs to
     for (uint i = 0; i < g->v_num; i++) {
         if (g->v[i].componente == 0) {
-            r = &g->v[i];
-            c++;
+            // initialize veritces state
+            set_states(g->v, g->v_num, 0);
 
+            r = &g->v[i];
             r->pai = NULL;
             r->estado = 1;
-            r->componente = c;
-            printf("queue append %s\n", r->name);
+            r->componente = ++c;
             queue_append(&queue, r);
 
             // pop vertice from queue until it empties
             while ((v = queue_pop(&queue))) {
-                printf("queue pop %s\n", v->name);
-                // iterate through neighbors
+                //  iterate through neighbors
                 w = v->n_list;
                 while (w != NULL) {
                     if (w->vert->estado == 0) {
-                        printf("queue append %s\n", w->vert->name);
-                        queue_append(
-                            &queue, w->vert); // if neighbor wasnt processed, append to queue
+                        // if neighbor wasnt processed, append to queue
+                        queue_append(&queue, w->vert);
                         w->vert->pai = v;
                         w->vert->estado = 1;
                         w->vert->componente = c;
                     }
                     w = w->next;
                 }
-                printf("queue poping\n");
             }
         }
     }
@@ -228,50 +215,50 @@ uint set_components(grafo* g)
     return c;
 }
 
-// set distances between vertice 'r' and all other vertices in the same compoment as 'r'
-void mininumDistances(grafo* g, vertice* r)
-{
-    queue_t* queue = NULL;
-    vertice* v;
-    neighbor* w;
-
-    set_states(g->v, g->v_num, 0);
-
-    r->pai = NULL;
-    r->dist = 0;
-    r->estado = 1;
-    queue_append(&queue, (void*)r);
-
-    // pop vertice from queue
-    while ((v = queue_pop(&queue))) {
-        // iterate through neighbors
-        w = v->n_list;
-        while (w != NULL) {
-            if (w->vert->estado == 0) {
-                // processe w
-                w->vert->pai = v;
-                w->vert->dist = v->dist + 1;
-                queue_append(&queue, w->vert);
-                w->vert->estado = 1;
-            }
-            w = w->next;
-        }
-    }
-
-    destroy_queue(&queue);
-}
+//// set distances between vertice 'r' and all other vertices in the same compoment as 'r'
+// void mininumDistances(grafo* g, vertice* r)
+//{
+//     queue_t* queue = NULL;
+//     vertice* v;
+//     neighbor* w;
+//
+//     set_states(g->v, g->v_num, 0);
+//
+//     r->pai = NULL;
+//     r->dist = 0;
+//     r->estado = 1;
+//     queue_append(&queue, (void*)r);
+//
+//     // pop vertice from queue
+//     while ((v = queue_pop(&queue))) {
+//         // iterate through neighbors
+//         w = v->n_list;
+//         while (w != NULL) {
+//             if (w->vert->estado == 0) {
+//                 // processe w
+//                 w->vert->pai = v;
+//                 w->vert->dist = v->dist + 1;
+//                 queue_append(&queue, w->vert);
+//                 w->vert->estado = 1;
+//             }
+//             w = w->next;
+//         }
+//     }
+//
+//     destroy_queue(&queue);
+// }
 
 // search vertice of name 'name' in the list 'V' of size 'size'
 // returns pointer to vertice, if it's found, else retuns NULL
 vertice* search_vert(vertice* V, uint size, char* name)
 {
-    printf("searching %s in list of size %u\n", name, size);
+    // printf("searching %s in list of size %u\n", name, size);
     for (uint i = 0; i < size; i++) {
-        printf("cmp(V[%d].name = %s, %s)\n", i, V[i].name, name);
+        // printf("cmp(V[%d].name = %s, %s)\n", i, V[i].name, name);
         if (strcmp(V[i].name, name) == 0)
             return &V[i];
     }
-    printf("end of search\n");
+    // printf("end of search\n");
 
     return NULL;
 }
@@ -313,7 +300,7 @@ vertice* add_vert(vertice** V, uint* size, uint* max, char* name)
         }
         (*size)++;
         (*V)[*size - 1].name = name;
-        printf("V[%d].name = %s\n", *size - 1, (*V)[*size - 1].name);
+        // printf("V[%d].name = %s\n", *size - 1, (*V)[*size - 1].name);
         return &((*V)[*size - 1]);
     } else // if vertice is already in the list, dont do anything
         return v;
@@ -475,11 +462,11 @@ grafo* le_grafo(FILE* f)
             destroi_grafo(g);
             return NULL;
         } else if (res > 1) {
-            printf("\nname_x:%s name_y:%s p:%d\n", name_x, name_y, p);
-            printf("\nadd v\n");
+            // printf("\nname_x:%s name_y:%s p:%d\n", name_x, name_y, p);
+            // printf("\nadd v\n");
             add_graph_edge(g, name_x, name_y, p);
         } else if (res == 1) {
-            printf("\nadd v\n");
+            // printf("\nadd v\n");
             add_graph_vert(g, name_x);
         }
     }
@@ -535,14 +522,13 @@ unsigned int n_arestas(grafo* g)
 // devolve o número de componentes em g
 unsigned int n_componentes(grafo* g)
 {
-    printf("setting components\n");
     // ja que vertices so sao adicionados ao criar o grafo,
     // nao eh necessario setar componentes de um grafo mais que uma vez
     if (g->n_componentes != 0)
         return g->n_componentes;
 
     g->n_componentes = set_components(g);
-    printf("setted\n");
+    // printf("setted\n");
 
     return g->n_componentes;
 }
@@ -552,26 +538,31 @@ unsigned int n_componentes(grafo* g)
 // 'max', altering the values of size and max as needed.
 void low_point(grafo* g, vertice* r, vertice** vertex_cut, uint* size, uint* max)
 {
-    printf("low_point v: %s\n", r->name);
+    // printf("low_point %s\n", r->name);
+    unsigned int n_filhos = 0;
     r->estado = 1;
 
     // iterate through neighbors
     neighbor* w = r->n_list;
     while (w != NULL) {
-        printf("processando %s vizinho de %s\n", w->vert->name, r->name);
         if ((w->vert->estado == 1) && (w->vert->nivel < r->lowpoint) && (w->vert != r->pai))
             r->lowpoint = w->vert->nivel;
         else if (w->vert->estado == 0) {
             w->vert->pai = r;
-
-            w->vert->nivel = r->nivel + 1;
+            w->vert->lowpoint = w->vert->nivel = r->nivel + 1;
             low_point(g, w->vert, vertex_cut, size, max);
 
-            if (r->nivel > w->vert->lowpoint) {
-                // add vertex to vertex cut
-                printf("vertice de corte encontrado: %s\n", r->name);
+            n_filhos++;
+            if ((r->nivel <= w->vert->lowpoint) && (r->pai != NULL)) {
+                // if (r->nivel < w->vert->lowpoint) {
+                //     add_vert(edge_cut, size, max, r->name);
+                //     add_vert(edge_cut, size, max, w->vert->name);
+                // }
+
+                //  add vertex to vertex cut
+                // printf("vertice de corte encontrado: %s\n", r->name);
                 add_vert(vertex_cut, size, max, r->name);
-                printf("%s\n", (*vertex_cut)[*size - 1].name);
+                // printf("%s\n", (*vertex_cut)[*size - 1].name);
             }
 
             if (w->vert->lowpoint < r->lowpoint)
@@ -579,19 +570,25 @@ void low_point(grafo* g, vertice* r, vertice** vertex_cut, uint* size, uint* max
         }
         w = w->next;
     }
-    printf("lowpoint do v %s: %u\n", r->name, r->lowpoint);
 
+    if ((r->pai == NULL) && (n_filhos > 1)) {
+        // printf("vertice raiz de corte encontrado: %s\n", r->name);
+        add_vert(vertex_cut, size, max, r->name);
+        printf("%s\n", (*vertex_cut)[*size - 1].name);
+    }
+
+    // printf("low_point %s = %d\n", r->name, r->lowpoint);
     r->estado = 2;
 }
 
 void set_vertex_cut(grafo* g, vertice** vertex_cut, uint* size, uint* max)
 {
-    printf("set_vertex_cut\n");
     set_states(g->v, g->v_num, 0);
 
     for (uint i = 0; i < g->v_num; i++) {
         if (g->v[i].estado == 0) {
             g->v[i].lowpoint = g->v[i].nivel = 0;
+            g->v[i].pai = NULL;
             low_point(g, &g->v[i], vertex_cut, size, max);
         }
     }
@@ -606,8 +603,6 @@ int comp_vert_name(const void* a, const void* b)
 // alphabetically
 char* create_name_list(vertice* V, uint size)
 {
-    printf("create_name_list\n");
-    printf("size: %u\n", size);
     char* string;
     if (size == 0) {
         if (!(string = malloc(sizeof(char) * 1)))
@@ -625,7 +620,6 @@ char* create_name_list(vertice* V, uint size)
         total_len += strlen(V[i].name);
         total_len++;
     }
-    printf("total_len: %zu\n", total_len);
 
     // allocate string
     if (!(string = malloc(sizeof(char) * total_len)))
@@ -635,7 +629,6 @@ char* create_name_list(vertice* V, uint size)
     // concatanate name of all vertices to the output string
     uint i;
     for (i = 0; i < size - 1; i++) {
-        printf("concat name %s\n", V[i].name);
         strcat(string, V[i].name);
         strcat(string, " ");
     }
@@ -649,7 +642,6 @@ char* create_name_list(vertice* V, uint size)
 // ordem alfabética, separados por brancos
 char* vertices_corte(grafo* g)
 {
-    printf("vertices_corte\n");
     vertice* vertex_cut = NULL;
     uint size = 0;
     uint max = 0;
@@ -661,10 +653,54 @@ char* vertices_corte(grafo* g)
     return name_list;
 }
 
-/*
 //------------------------------------------------------------------------------
 // devolve 1 se g é bipartido e 0 caso contrário
-unsigned int bipartido(grafo *g);
+unsigned int bipartido(grafo* g)
+{
+    queue_t* queue = NULL;
+    vertice* v;
+    neighbor* w;
+    vertice* r;
+
+    // for each vevrtice, set the component of the connected subgraph it belongs to
+    for (uint i = 0; i < g->v_num; i++) {
+        // initialize veritces state
+        set_states(g->v, g->v_num, 0);
+
+        r = &g->v[i];
+        r->pai = NULL;
+        r->estado = 1;
+        r->nivel = 0;
+        queue_append(&queue, r);
+
+        // pop vertice from queue until it empties
+        while ((v = queue_pop(&queue))) {
+            // iterate through neighbors
+            w = v->n_list;
+            while (w != NULL) {
+                if (w->vert->estado == 1) {
+                    if ((w->vert->nivel % 2) == (v->nivel % 2)) {
+                        destroy_queue(&queue);
+                        return 0;
+                    }
+                }
+                if (w->vert->estado == 0) {
+                    // if neighbor wasnt processed, append to queue
+                    queue_append(&queue, w->vert);
+                    w->vert->pai = v;
+                    w->vert->estado = 1;
+                    w->vert->nivel = v->nivel + 1;
+                }
+                w = w->next;
+            }
+        }
+    }
+
+    destroy_queue(&queue);
+    return 1;
+}
+
+/*
 
 //------------------------------------------------------------------------------
 // devolve uma "string" com os diâmetros dos componentes de g separados por
