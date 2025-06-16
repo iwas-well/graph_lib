@@ -612,8 +612,10 @@ char* create_edge_name(const char* name1, const char* name2)
 // edges that are cut edges to the 'edge_cut' list
 void low_point(grafo* g, vertice* r, str_list* vertex_cut, str_list* edge_cut)
 {
-    unsigned int n_filhos = 0;
+    uint n_filhos = 0;
+    uint v_corte = 0;
     r->estado = 1;
+
     char* str;
 
     // iterates through neighbors
@@ -627,10 +629,11 @@ void low_point(grafo* g, vertice* r, str_list* vertex_cut, str_list* edge_cut)
             g->v[w->idx].lowpoint = g->v[w->idx].nivel = r->nivel + 1;
             low_point(g, &(g->v[w->idx]), vertex_cut, edge_cut);
 
-            if ((r->nivel <= g->v[w->idx].lowpoint) && (r->pai != NULL)) {
+            if ((r->nivel <= g->v[w->idx].lowpoint) && (r->pai != NULL) && !v_corte) {
                 // adds vertex to vertex cut
                 str = create_edge_name(r->name, "");
                 add_name(vertex_cut, str);
+                v_corte++;
             }
 
             if (r->nivel < g->v[w->idx].lowpoint) {
@@ -754,6 +757,7 @@ void dijkstra_max_dist(grafo* g, vertice* r)
         }
 
     r->dist = 0;
+    heapify_vertex_up(h, r);
     vertice* v;
     neighbor* w;
 
