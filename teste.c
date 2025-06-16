@@ -16,13 +16,13 @@ int main(void)
 
     printf("%sbipartido\n", bipartido(g) ? "" : "não ");
 
-    // printf("diâmetros: %s\n", s=diametros(g));
-    // free(s);
+    printf("diâmetros: %s\n", s = diametros(g));
+    free(s);
 
     printf("vértices de corte: %s\n", s = vertices_corte(g));
     free(s);
-    // printf("arestas de corte: %s\n", s=arestas_corte(g));
-    // free(s);
+    printf("arestas de corte: %s\n", s = arestas_corte(g));
+    free(s);
 
     return !destroi_grafo(g);
 }
