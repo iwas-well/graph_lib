@@ -752,12 +752,12 @@ void dijkstra_max_dist(grafo* g, vertice* r)
     // copia vertices do componente de r para lista de prioridades
     for (uint i = 0; i < g->v_num; i++)
         if (g->v[i].componente == r->componente) {
-            heap_append_vertex(h, &(g->v[i]));
             g->v[i].dist = UINT_MAX;
+            if (r == &(g->v[i]))
+                g->v[i].dist = 0;
+            heap_append_vertex(h, &(g->v[i]));
         }
 
-    r->dist = 0;
-    heapify_vertex_up(h, r);
     vertice* v;
     neighbor* w;
 
