@@ -15,8 +15,7 @@ Funcionalidades principais
     n_vertices(grafo* g): Retorna o número de vértices.
     n_arestas(grafo* g): Retorna o número de arestas.
     n_componentes(grafo* g): Calcula e retorna o número de componentes conexas.
-    set_cut(grafo* g): Identifica e salva os cortes de vértice e de aresta.
-    set_diameters(grafo* g): Calcula o diâmetro de cada componente.
+    bipartido(grafo *g): Retorna 1 se grafo é bipartido, 0 caso contrário.
 
 Entrada esperada
 
@@ -28,8 +27,6 @@ A
 A -- B
 B -- C 5
 ```
-```
-
     Linhas com apenas um nome definem vértices.
     Linhas no formato X -- Y P definem arestas com peso P (inteiro positivo) entre vértices X e Y.
 
